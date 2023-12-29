@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recordings</title>
+</head>
+<body>
+    <h1>Recordings of {{ streamer.username }} [{{ streamer.siteslug }}]</h1>
+    {% if recordings %}
+        <p>
+            {% for recording in recordings %}
+                {{ recording }}<br>
+            {% endfor %}
+        </p>
+    {% else %}
+        <p>No recordings</p>
+    {% endif %}
+</body>
+</html>

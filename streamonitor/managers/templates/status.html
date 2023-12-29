@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>直播下载任务状态</title>
+
+    <!-- 引入Bootstrap样式 -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <h1>直播下载任务状态</h1>
+    <button class="btn btn-primary" data-toggle="modal" data-target="#addStreamerModal">添加直播间</button>
+    
+    <!-- 模态框 -->
+    <div class="modal fade" id="addStreamerModal" tabindex="-1" role="dialog" aria-labelledby="addStreamerModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addStreamerModalLabel">添加直播间</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- 表单 -->
+                    <form id="addStreamerForm">
+                        <div class="form-group">
+                            <label for="streamerName">主播名字</label>
+                            <input type="text" class="form-control" id="streamerName" placeholder="输入主播名字">
+                        </div>
+                        <div class="form-group">
+                            <label for="platformSelect">平台</label>
+                            <select class="form-control" id="platformSelect">
+                                <option value="SC">SC</option>
+                                <option value="ATV">ATV</option>
+                                <option value="CC">CC</option>
+                                <!-- 添加其他平台选项 -->
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="addStreamer()">确认</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 其他页面内容... -->
+
+    <!-- 引入Bootstrap和jQuery库 -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <!-- 自定义脚本 -->
+    <script>
+        function addStreamer() {
+            // 获取输入框和下拉框的值
+            var streamerName = document.getElementById('streamerName').value;
+            var platform = document.getElementById('platformSelect').value;
+
+            // 触发Controller.py中的添加操作
+            // 这里只是演示，实际应用中需要通过AJAX等方式与后端交互
+            alert("触发添加直播间操作：" + streamerName + " - " + platform);
+
+            // 关闭模态框
+            $('#addStreamerModal').modal('hide');
+        }
+    </script>
+    <h1>直播下载任务状态</h1>
+    <table border="1">
+        <tr>
+            <th>直播网站</th>
+            <th>主播名字</th>
+            <th>是否开始监控任务</th>
+            <th>直播间状态</th>
+        </tr>
+        {% for streamer in streamers %}
+            <tr>
+                <td>{{ streamer.site }}</td>
+                <td><a href="{{ url_for('recordings', user=streamer.username, site=streamer.site) }}">{{ streamer.username }}</a></td>
+                <td><a href="#" onclick="togglerunning('{{ streamer.username }}')">{{ streamer.running }}</a></td>
+                <td><a href="#" onclick="refreshstatus('{{ streamer.username }}')">{{ streamer.status() }}</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
