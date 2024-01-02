@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>直播下载任务状态</title>
 
-    <!-- 引入Bootstrap样式 -->
+    <!-- 引入Bootstrap和jQuery库 -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 </head>
 <body>
+
     <h1>直播下载任务状态</h1>
     <button class="btn btn-primary" data-toggle="modal" data-target="#addStreamerModal">添加直播间</button>
     
@@ -44,14 +48,10 @@
             </div>
         </div>
     </div>
-
+    
     <!-- 其他页面内容... -->
-
-    <!-- 引入Bootstrap和jQuery库 -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-
+    
+    
     <!-- 自定义脚本 -->
     <script>
         function addStreamer() {
@@ -59,14 +59,99 @@
             var streamerName = document.getElementById('streamerName').value;
             var platform = document.getElementById('platformSelect').value;
 
-            // 触发Controller.py中的添加操作
-            // 这里只是演示，实际应用中需要通过AJAX等方式与后端交互
-            alert("触发添加直播间操作：" + streamerName + " - " + platform);
+            // 构造消息
+            var message = {
+				operation: 'addStreamer',
+                username: streamerName,
+                website: platform
+            };
+            // 使用 fetch 发送消息给服务器
+            fetch('/add_streamer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(message),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 处理服务器响应
+                // alert(data.message);
+				location.reload();
+                // 这里可以更新页面内容或执行其他操作
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+
 
             // 关闭模态框
             $('#addStreamerModal').modal('hide');
         }
+
+		// 新增的停止按钮点击事件处理函数
+	    function toggleStreamer(username, action) {
+        // 显示或隐藏对应的按钮
+        if (action === 'stop') {
+            document.getElementById('stopBtn_' + username).style.display = 'none';
+            document.getElementById('startBtn_' + username).style.display = 'inline-block';
+        } else if (action === 'start') {
+            document.getElementById('startBtn_' + username).style.display = 'none';
+            document.getElementById('stopBtn_' + username).style.display = 'inline-block';
+        }
+
+        // 在这里添加发送消息给服务器的逻辑
+        var message = {
+            operation: action,
+            username: username
+        };
+        fetch('/toggle_streamer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(message),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 处理服务器响应
+            // alert(data.message);
+			location.reload();
+            // 这里可以更新页面内容或执行其他操作
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+
+
+    // 新增的移除按钮点击事件处理函数
+    function removeStreamer(username) {
+        var message = {
+            operation: 'removeStreamer',
+            username: username
+        };
+        // 使用 fetch 发送消息给服务器
+        fetch('/remove_streamer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(message),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 处理服务器响应
+            // alert(data.message);
+			location.reload();
+            // 这里可以更新页面内容或执行其他操作
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
     </script>
+
     <h1>直播下载任务状态</h1>
     <table border="1">
         <tr>
@@ -74,6 +159,8 @@
             <th>主播名字</th>
             <th>是否开始监控任务</th>
             <th>直播间状态</th>
+            <th>停止录像</th>
+            <th>移除主播</th>
         </tr>
         {% for streamer in streamers %}
             <tr>
@@ -81,8 +168,18 @@
                 <td><a href="{{ url_for('recordings', user=streamer.username, site=streamer.site) }}">{{ streamer.username }}</a></td>
                 <td><a href="#" onclick="togglerunning('{{ streamer.username }}')">{{ streamer.running }}</a></td>
                 <td><a href="#" onclick="refreshstatus('{{ streamer.username }}')">{{ streamer.status() }}</a></td>
-            </tr>
-        {% endfor %}
+				<td>
+					<!-- 停止按钮 -->
+					<button id="stopBtn_{{ streamer.username }}" type="button" class="btn btn-warning" style="{% if streamer.running %}display:inline-block;{% else %}display:none;{% endif %}" onclick="toggleStreamer('{{ streamer.username }}', 'stop')">停止</button>
+					<!-- 开始按钮，初始时设为不可见 -->
+					<button id="startBtn_{{ streamer.username }}" type="button" class="btn btn-success" style="{% if not streamer.running %}display:inline-block;{% else %}display:none;{% endif %}" onclick="toggleStreamer('{{ streamer.username }}', 'start')">开始</button>
+				</td>
+				<td>
+					<!-- 移除按钮 -->
+					<button type="button" class="btn btn-danger" onclick="removeStreamer('{{ streamer.username }}')">移除</button>
+				</td>
+			</tr>
+			{% endfor %}
     </table>
 </body>
 </html>
