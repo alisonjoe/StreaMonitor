@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template, jsonify
 import os
 import zmq
+from collections import namedtuple
 from streamonitor.bot import Bot
 import streamonitor.log as log
 from streamonitor.manager import Manager
@@ -17,6 +18,21 @@ class HTTPManager(Manager):
         def status():
             return render_template('status.html', streamers=self.streamers)
 
+        def get_file_size(file_path):
+            return os.path.getsize(file_path)
+
+        def format_file_size(file_size):
+            # 定义单位后缀
+            suffixes = ['B', 'KB', 'MB', 'GB', 'TB']
+
+            # 递归转换大小并选择合适的单位
+            index = 0
+            while file_size >= 1024 and index < len(suffixes) - 1:
+                file_size /= 1024
+                index += 1
+
+            # 格式化输出文件大小
+            return f"{file_size:.2f} {suffixes[index]}"
 
         @app.route('/recordings')
         def recordings():
@@ -24,12 +40,19 @@ class HTTPManager(Manager):
             site = request.args.get("site")
             streamer = self.getStreamer(user, site)
             recordings_list = []
+            real_recordings_list = []
             try:
-                recordings_list = os.listdir(f"./downloads/{user} [{site}]")
+                directory = f"./downloads/{user} [{site}]"
+                recordings_list = os.listdir(directory)
+                for recording in recordings_list:
+                    file_path = os.path.join(directory, recording)
+                    file_size = format_file_size(get_file_size(file_path))
+                    file = f"{recording} ---- {file_size}"
+                    real_recordings_list.append(file)
             except FileNotFoundError:
                 pass
 
-            return render_template('recordings.html', streamer=streamer, recordings=recordings_list)
+            return render_template('recordings.html', streamer=streamer, recordings=real_recordings_list)
 
         @app.route('/add_streamer', methods=['POST'])
         def add_streamer():

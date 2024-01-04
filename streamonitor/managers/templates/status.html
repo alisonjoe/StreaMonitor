@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>直播下载任务状态</title>
+    <title>Downloader-GL</title>
 
     <!-- 引入Bootstrap和jQuery库 -->
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
@@ -38,7 +38,19 @@
                             <select class="form-control" id="platformSelect">
                                 <option value="SC">SC</option>
                                 <option value="ATV">ATV</option>
+                                <option value="BC">BC</option>
+                                <option value="C4">C4</option>
                                 <option value="CC">CC</option>
+                                <option value="CS">CS</option>
+                                <option value="CB">CB</option>
+                                <option value="CHTV">CHTV</option>
+                                <option value="DCVR">DCVR</option>
+                                <option value="F4F">F4F</option>
+                                <option value="MV">MV</option>
+                                <option value="MFC">MFC</option>
+                                <option value="SCHU">SCHU</option>
+                                <option value="SM">SM</option>
+                                <option value="SCVR">SCVR</option>
                                 <!-- 添加其他平台选项 -->
                             </select>
                         </div>
@@ -165,7 +177,7 @@
         {% for streamer in streamers %}
             <tr>
                 <td>{{ streamer.site }}</td>
-                <td><a href="{{ url_for('recordings', user=streamer.username, site=streamer.site) }}">{{ streamer.username }}</a></td>
+                <td><a href="{{ url_for('recordings', user=streamer.username, site=streamer.siteslug) }}">{{ streamer.username }}</a></td>
                 <td><a href="#" onclick="togglerunning('{{ streamer.username }}')">{{ streamer.running }}</a></td>
                 <td><a href="#" onclick="refreshstatus('{{ streamer.username }}')">{{ streamer.status() }}</a></td>
 				<td>
